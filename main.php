@@ -5,32 +5,38 @@ function parse_text($src) {
 	$doc = new DOMDocument();
 	@$doc->loadHTML($xmlstr);
 	$xpath = new DOMXPath($doc);
-	$query = '//html/body/table/tr/td[@class="xl35"]';
+	$query = '//html/body/table/tr/td[@class="xl34"]';
+	$query .= '|//html/body/table/tr/td[@class="xl35"]';
+	$query .= '|//html/body/table/tr/td[@class="xl36"]';
+	$query .= '|//html/body/table/tr/td[@class="xl37"]';
 	$query .= '|//html/body/table/tr/td[@class="xl45"]';
 	$query .= '|//html/body/table/tr/td[@class="xl46"]';
+	$query .= '|//html/body/table/tr/td[@class="xl47"]';
 	$entries = $xpath->query($query);
 
 	$foods = array();
-	foreach ($entries as $entry) {
-		//var_dump($entry);
-		//print_r($entry->attributes->getNamedItem('class')->nodeValue);
-		$food = rtrim(preg_replace('/\s+/', ' ', $entry->nodeValue), '.');
-		if (!empty($food)) $foods[] = $food;
-	}
-
-	$query = '//html/body/table/tr/td[@class="xl34"]';
-	$query .= '|//html/body/table/tr/td[@class="xl36"]';
-	$entries = $xpath->query($query);
-
 	$prices = array();
 	foreach ($entries as $entry) {
 		//var_dump($entry);
 		//print_r($entry->attributes->getNamedItem('class')->nodeValue);
-		$price = strip_tags($entry->nodeValue);
-		$price = str_replace('=A0', '', $price);
-		$price = str_replace('$', '', $price);
-		$price = str_replace(',', '.', $price);
-		$prices[] = (float)$price;
+		if (empty($entry->nodeValue)) continue;
+		$c = count($foods) + count($prices);
+		if (strpos($entry->nodeValue, '....') !== FALSE) {
+			$food = rtrim(preg_replace('/\s+/', ' ', $entry->nodeValue), '.');
+			if (!empty($food)) $foods[] = $food;
+		}
+		else {
+			$price = strip_tags($entry->nodeValue);
+			if (strpos($price, '=A0') !== FALSE && strpos($price, '$') !== FALSE && strpos($price, ',') !== FALSE) {
+				$price = str_replace('=A0', '', $price);
+				$price = str_replace('$', '', $price);
+				$price = str_replace(',', '.', $price);
+				$prices[] = (float)$price;
+			}
+		}
+		if ($c == count($foods) + count($prices)) {
+			var_dump($entry->nodeValue);
+		}
 	}
 
 	/*
