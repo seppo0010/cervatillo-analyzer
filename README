@@ -1,1 +1,3 @@
-Cervatillo Analyzer requires php5 and php5-imap
+Cervatillo Analyzer is a quick home made tool I did to download emails menu a food site sends me every day and draw the prices evolution.
+It's probably useless for anybody else for something else than an example.
+Cervatillo Analyzer requires php5, php5-imap and php5-gd
