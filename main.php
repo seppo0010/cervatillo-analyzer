@@ -12,6 +12,7 @@ function parse_text($src) {
 	$query .= '|//html/body/table/tr/td[@class="xl45"]';
 	$query .= '|//html/body/table/tr/td[@class="xl46"]';
 	$query .= '|//html/body/table/tr/td[@class="xl47"]';
+	$query .= '|//html/body/table/tr/td[@class="xl48"]';
 	$entries = $xpath->query($query);
 
 	$foods = array();
@@ -23,7 +24,7 @@ function parse_text($src) {
 		$c = count($foods) + count($prices);
 		if (strpos($entry->nodeValue, '....') !== FALSE) {
 			$food = rtrim(preg_replace('/\s+/', ' ', $entry->nodeValue), '.');
-			if (!empty($food)) $foods[] = $food;
+			if (!empty($food)) $foods[] = trim($food);
 		}
 		else {
 			$price = strip_tags($entry->nodeValue);
@@ -48,8 +49,7 @@ function parse_text($src) {
 	if (count($prices) == count($foods)) {
 		if (count($prices) == 0) return TRUE;
 		$matrix = array_combine($foods, $prices);
-		var_dump($matrix);
-		return TRUE;
+		return $matrix;
 	} else {
 		echo 'count($prices) = ' . count($prices) , "\n";
 		echo 'count($foods) = ' . count($foods) , "\n";
@@ -94,13 +94,17 @@ var_dump($nmsgs);
 $result = imap_fetch_overview($imap,'1:' . $nmsgs,0);
 foreach ($result as $overview) {
 	$time = strtotime($overview->date);
-	if (!is_file($time . '.email')) {
+	if (is_file($time . '.json')) {
+		continue;
+	} else if (!is_file($time . '.email')) {
 		$body = imap_fetchbody ($imap, $overview->msgno, '2', FT_PEEK);
 		if ($body) file_put_contents($time . '.email', $body);
 	} else {
 		$body = file_get_contents($time . '.email');
 	}
-	if (!parse_text($body)) break;
+	$matrix = parse_text($body);
+	if ($matrix === FALSE) break;
+	file_put_contents($time . '.json', json_encode($matrix));
 }
 imap_close($imap);
 
