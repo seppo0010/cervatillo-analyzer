@@ -46,14 +46,18 @@ foreach ($items as $item) {
 	// data point isn't exactly at the very end or beginning of the scale
 	$xmin = $datax[$item][0]-$grace;
 	$xmax = $datax[$item][$n-1]+$grace;
+	$ymin = min($datay[$item]);
+	$ymax = max($datay[$item]);
+	$ampl = 2;
+	if ($ymax - $ymin < 5) $ampl = 4;
 
 	$graph = new Graph($w,250);
-	$graph->SetScale('linlin',0,0,$xmin,$xmax);
+	$graph->SetScale('linlin',max($ymin - $ampl, 0), $ymax + $ampl,$xmin,$xmax);
 	$graph->SetMargin($lm,$rm,10,30);
 	$graph->SetMarginColor('white');
 	$graph->SetFrame(false);
 	$graph->SetBox(true);
-	$graph->title->Set(urldecode(str_replace('=', '%', $item)));
+	$graph->title->Set(str_replace(' % ', ' ', urldecode(str_replace('=', '%', $item))));
 	$graph->title->SetFont(FF_ARIAL,FS_NORMAL,14);
 	$graph->xaxis->SetTickPositions($tickPositions,$minTickPositions);
 	$graph->xaxis->SetLabelFormatString('My',true);
@@ -79,10 +83,10 @@ foreach ($graphs as $graph) {
 	if ($i == 0) {
 		$i++;
 	} else if ($i++ % $per_row == 0 && $i != 1) {
-		$y += 250;
+		$y += 280;
 		$x = 0;
 	} else {
-		$x += $w;
+		$x += $w + 50;
 	}
 	$mgraph->AddMix($graph,$x,$y,85);
 }
